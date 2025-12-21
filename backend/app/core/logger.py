@@ -3,7 +3,7 @@ import sys
 from app.core.config import settings
 
 def get_logger():
-    logger = logging.getLogger("prf_forensics")
+    logger = logging.getLogger("prf_motor_forensics")
     logger.setLevel(logging.DEBUG if settings.DEBUG_MODE else logging.INFO)
     
     if not logger.handlers:

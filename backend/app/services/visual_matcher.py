@@ -1,73 +1,86 @@
 import cv2
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
+from typing import Dict, Optional
 from app.services.ocr import OCREngine
-from app.services.texture_utils import TextureUtils
 from app.core.config import settings
+from app.core.logger import logger
+
 
 class VisualMatcher:
+    """
+    Comparador visual de gravações de motor.
+    Compara a foto enviada com imagens de referência do banco de dados.
+    """
+    
     def __init__(self):
         self.ocr = OCREngine()
-        self.tex = TextureUtils()
-
-    def compare(self, user_bytes: bytes, ref_path: str) -> dict:
-        if not ref_path:
-            return {"status": "ALERTA", "wmi_similarity": 0.0, "style_match": "N/A", "details": "Sem imagem de referência"}
-
-        # Carregar Imagens
-        img_user, user_gray, _ = self.tex.preprocess(user_bytes)
-        img_ref = cv2.imread(ref_path, cv2.IMREAD_GRAYSCALE)
+    
+    def compare(self, user_image_bytes: bytes, ref_path: Optional[str]) -> Dict:
+        """
+        Compara imagem do usuário com referência.
         
-        if img_ref is None: 
-            return {"status": "ERRO", "wmi_similarity": 0.0, "style_match": "N/A", "details": "Erro ao ler arquivo de referência"}
-
-        # 1. OCR na Referência para achar posição do WMI
-        _, _, ref_encoded = cv2.imencode('.jpg', img_ref)
-        _, ref_ocr = self.ocr.process_image(ref_encoded.tobytes())
-        _, user_ocr = self.ocr.process_image(user_bytes)
-
-        # 2. Comparação de Prefixo (WMI - primeiros 3 chars)
-        score = 0.0
-        status = "N/A"
-        
-        if len(ref_ocr) >= 3 and len(user_ocr) >= 3:
-            ref_crop = self._extract_crop_from_ocr(img_ref, ref_ocr[:3])
-            user_crop = self._extract_crop_from_ocr(user_gray, user_ocr[:3])
+        Args:
+            user_image_bytes: Bytes da imagem enviada
+            ref_path: Caminho da imagem de referência
             
-            if ref_crop.size > 0 and user_crop.size > 0:
-                try:
-                    # Normaliza tamanho para 200x100 para comparação SSIM
-                    ref_resized = cv2.resize(ref_crop, (200, 100))
-                    user_resized = cv2.resize(user_crop, (200, 100))
-                    
-                    score, _ = ssim(ref_resized, user_resized, full=True)
-                    status = "COMPATIVEL" if score > settings.SSIM_THRESHOLD else "DIVERGENTE"
-                except Exception:
-                    status = "ERRO_PROCESSAMENTO"
-
-        return {
-            "status": status,
-            "wmi_similarity": round(score * 100, 1),
-            "style_match": "Padrão Visual Verificado",
-            "details": "Comparação visual realizada com sucesso." if status != "N/A" else "Não foi possível isolar o WMI para comparação."
+        Returns:
+            Dict com resultado da comparação
+        """
+        result = {
+            'status': 'SEM_REFERÊNCIA',
+            'similarity': 0.0,
+            'reference_used': None,
+            'details': ''
         }
-
-    def _extract_crop_from_ocr(self, img, details):
+        
+        if not ref_path:
+            result['details'] = "Nenhuma imagem de referência disponível para comparação"
+            return result
+        
         try:
-            # Pega limites extremos dos caracteres
-            x_coords = [p[0] for det in details for p in det[0]]
-            y_coords = [p[1] for det in details for p in det[0]]
+            # Carrega imagens
+            nparr = np.frombuffer(user_image_bytes, np.uint8)
+            user_img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+            ref_img = cv2.imread(ref_path, cv2.IMREAD_GRAYSCALE)
             
-            x_min, x_max = int(min(x_coords)), int(max(x_coords))
-            y_min, y_max = int(min(y_coords)), int(max(y_coords))
+            if user_img is None:
+                result['status'] = 'ERRO'
+                result['details'] = "Erro ao processar imagem do usuário"
+                return result
             
-            # Adiciona uma margem de segurança
-            h, w = img.shape
-            y_min = max(0, y_min - 5)
-            y_max = min(h, y_max + 5)
-            x_min = max(0, x_min - 5)
-            x_max = min(w, x_max + 5)
-
-            return img[y_min:y_max, x_min:x_max]
-        except: 
-            return np.array([])
+            if ref_img is None:
+                result['status'] = 'ERRO'
+                result['details'] = f"Erro ao carregar referência: {ref_path}"
+                return result
+            
+            result['reference_used'] = ref_path
+            
+            # Normaliza tamanhos para comparação
+            target_size = (400, 150)
+            user_resized = cv2.resize(user_img, target_size)
+            ref_resized = cv2.resize(ref_img, target_size)
+            
+            # Equaliza histograma para normalizar iluminação
+            user_eq = cv2.equalizeHist(user_resized)
+            ref_eq = cv2.equalizeHist(ref_resized)
+            
+            # Calcula SSIM
+            similarity, _ = ssim(user_eq, ref_eq, full=True)
+            result['similarity'] = round(similarity * 100, 1)
+            
+            # Determina status
+            if similarity >= settings.SSIM_THRESHOLD:
+                result['status'] = 'COMPATÍVEL'
+                result['details'] = "Padrão visual compatível com referência"
+            else:
+                result['status'] = 'DIVERGENTE'
+                result['details'] = f"Similaridade {result['similarity']}% abaixo do limiar ({settings.SSIM_THRESHOLD*100}%)"
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Erro na comparação visual: {e}")
+            result['status'] = 'ERRO'
+            result['details'] = f"Erro na comparação: {str(e)}"
+            return result
