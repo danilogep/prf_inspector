@@ -1,389 +1,293 @@
+"""
+Analisador de fonte Honda para detecção de adulteração.
+Compara caracteres extraídos com templates da fonte oficial.
+"""
+
 import cv2
 import numpy as np
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional
-from skimage.metrics import structural_similarity as ssim
-from app.core.config import settings
+from typing import Dict, List, Optional, Tuple
 from app.core.logger import logger
+from app.core.config import settings
 
 
 class FontAnalyzer:
     """
-    Analisador de fonte Honda com detecção de vazamentos (gaps).
+    Analisa caracteres comparando com templates da fonte Honda.
     
-    A fonte Honda tem características específicas que falsificadores 
-    frequentemente não conseguem reproduzir:
-    
-    1. VAZAMENTOS (GAPS): Aberturas específicas em certos números
-       - O "4" tem um gap onde a linha vertical não toca a horizontal
-       - O "9" tem uma cauda específica
-       - O "0" tem proporções exatas
-       
-    2. PROPORÇÕES: Relação altura/largura específica
-    
-    3. CANTOS: Ângulos e curvas padronizados
+    Características verificadas:
+    - Proporção (aspect ratio)
+    - Similaridade estrutural
+    - Vazamentos/gaps característicos
     """
     
-    # Características dos números Honda (baseado na imagem de referência)
-    # Valores são proporções e características geométricas
+    # Características esperadas da fonte Honda por caractere
     HONDA_FONT_CHARACTERISTICS = {
         '0': {
-            'aspect_ratio': (0.55, 0.70),  # largura/altura esperada (min, max)
-            'has_internal_gap': False,      # Não tem abertura interna
-            'symmetry': 'vertical',         # Simétrico verticalmente
-            'corners': 0,                   # Sem cantos (oval)
+            'aspect_ratio_range': (0.55, 0.75),
+            'has_internal_gap': False,
+            'description': 'Oval fechada, sem cortes internos'
         },
         '1': {
-            'aspect_ratio': (0.20, 0.35),
-            'has_base_serif': True,         # Tem serifa na base
-            'has_top_serif': True,          # Tem serifa pequena no topo
-            'symmetry': 'none',
-            'corners': 2,
+            'aspect_ratio_range': (0.20, 0.40),
+            'has_internal_gap': False,
+            'description': 'Fino, base reta, serifa pequena no topo'
         },
         '2': {
-            'aspect_ratio': (0.50, 0.65),
+            'aspect_ratio_range': (0.50, 0.70),
             'has_internal_gap': False,
-            'top_curve': True,              # Curva fechada no topo
-            'base_horizontal': True,
-            'corners': 1,
+            'description': 'Curva superior, base horizontal'
         },
         '3': {
-            'aspect_ratio': (0.50, 0.65),
-            'has_left_gaps': True,          # Aberturas à esquerda
-            'center_point': True,           # Ponto central onde curvas se encontram
-            'corners': 0,
+            'aspect_ratio_range': (0.50, 0.70),
+            'has_internal_gap': True,
+            'expected_gaps': ['left_top', 'left_bottom'],
+            'description': 'Duas curvas abertas à esquerda'
         },
         '4': {
-            'aspect_ratio': (0.55, 0.70),
-            'has_critical_gap': True,       # GAP CRÍTICO: linha vertical não toca horizontal
-            'gap_position': 'middle',       # Posição do gap
-            'symmetry': 'none',
-            'corners': 3,
+            'aspect_ratio_range': (0.55, 0.75),
+            'has_internal_gap': True,
+            'expected_gaps': ['middle'],
+            'description': 'Gap no encontro das linhas - característica Honda'
         },
         '5': {
-            'aspect_ratio': (0.50, 0.65),
-            'top_horizontal': True,
-            'bottom_curve_open': True,      # Curva inferior aberta à esquerda
-            'corners': 2,
+            'aspect_ratio_range': (0.50, 0.70),
+            'has_internal_gap': False,
+            'description': 'Topo horizontal, curva inferior'
         },
         '6': {
-            'aspect_ratio': (0.55, 0.70),
-            'top_curve_open': True,         # Curva superior aberta
-            'bottom_circle_closed': True,   # Círculo inferior fechado
-            'corners': 0,
+            'aspect_ratio_range': (0.55, 0.75),
+            'has_internal_gap': False,
+            'description': 'Curva superior aberta, círculo inferior'
         },
         '7': {
-            'aspect_ratio': (0.50, 0.65),
-            'top_horizontal': True,
-            'diagonal_clean': True,         # Diagonal sem serifa
-            'corners': 1,
+            'aspect_ratio_range': (0.50, 0.70),
+            'has_internal_gap': False,
+            'description': 'Linha horizontal no topo, diagonal'
         },
         '8': {
-            'aspect_ratio': (0.55, 0.70),
-            'two_circles': True,
-            'top_smaller': True,            # Círculo superior menor
-            'symmetry': 'both',
-            'corners': 0,
+            'aspect_ratio_range': (0.55, 0.75),
+            'has_internal_gap': False,
+            'description': 'Dois círculos empilhados'
         },
         '9': {
-            'aspect_ratio': (0.55, 0.70),
-            'top_circle_closed': True,      # Círculo superior fechado
-            'tail_curve': True,             # Cauda curva característica
-            'corners': 0,
+            'aspect_ratio_range': (0.55, 0.75),
+            'has_internal_gap': False,
+            'description': 'Círculo superior, cauda curva'
         },
     }
     
+    # Caracteres de alto risco (mais falsificados)
+    HIGH_RISK_CHARS = ['0', '1', '3', '4', '9']
+    
     def __init__(self):
-        self.font_templates: Dict[str, np.ndarray] = {}
-        self.template_features: Dict[str, Dict] = {}
+        self.templates: Dict[str, np.ndarray] = {}
         self._load_font_templates()
     
     def _load_font_templates(self):
-        """Carrega templates da fonte Honda."""
-        fonts_dir = settings.FONTS_DIR
+        """Carrega templates de fonte do diretório."""
+        fonts_dir = Path(settings.FONTS_DIR)
         
         if not fonts_dir.exists():
             logger.warning(f"Diretório de fontes não encontrado: {fonts_dir}")
-            fonts_dir.mkdir(parents=True, exist_ok=True)
             return
         
-        # Carrega arquivos individuais (0.png, 1.png, etc.)
         for char in '0123456789ABCDEFGHJKLMNPRSTUVWXYZ':
-            for ext in ['.png', '.jpg', '.jpeg']:
-                file_path = fonts_dir / f"{char}{ext}"
-                if file_path.exists():
-                    img = cv2.imread(str(file_path), cv2.IMREAD_GRAYSCALE)
-                    if img is not None:
-                        self.font_templates[char] = self._normalize_template(img)
-                        self.template_features[char] = self._extract_features(img)
-                        logger.debug(f"Template carregado: {char}")
-                    break
+            template_path = fonts_dir / f"{char}.png"
+            if template_path.exists():
+                img = cv2.imread(str(template_path), cv2.IMREAD_GRAYSCALE)
+                if img is not None:
+                    # Normaliza para tamanho padrão
+                    img = cv2.resize(img, (50, 70))
+                    _, img = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+                    self.templates[char] = img
         
-        # Tenta carregar spritesheet se existir
-        for sprite_name in ['honda_font.png', 'font_template.png', 'numeros.png']:
-            sprite_path = fonts_dir / sprite_name
-            if sprite_path.exists():
-                self._load_spritesheet(sprite_path)
-                break
-        
-        logger.info(f"Total de templates carregados: {len(self.font_templates)}")
+        logger.info(f"Templates carregados: {len(self.templates)} caracteres")
     
-    def _load_spritesheet(self, file_path: Path):
-        """Extrai caracteres de uma spritesheet (imagem com todos os números em sequência)."""
-        img = cv2.imread(str(file_path), cv2.IMREAD_GRAYSCALE)
-        if img is None:
-            logger.error(f"Não foi possível ler spritesheet: {file_path}")
-            return
-        
-        # Binariza
-        _, binary = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
-        
-        # Encontra contornos
-        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        # Filtra contornos pequenos e ordena da esquerda para direita
-        valid_contours = []
-        for c in contours:
-            x, y, w, h = cv2.boundingRect(c)
-            if w > 15 and h > 20:  # Filtra ruído
-                valid_contours.append((x, y, w, h))
-        
-        valid_contours.sort(key=lambda b: b[0])
-        
-        # Assume sequência 0-9
-        chars = '0123456789'
-        
-        for i, (x, y, w, h) in enumerate(valid_contours[:10]):
-            if i >= len(chars):
-                break
-            
-            # Adiciona margem
-            margin = 3
-            y1 = max(0, y - margin)
-            y2 = min(img.shape[0], y + h + margin)
-            x1 = max(0, x - margin)
-            x2 = min(img.shape[1], x + w + margin)
-            
-            char_img = img[y1:y2, x1:x2]
-            char = chars[i]
-            
-            if char not in self.font_templates:
-                self.font_templates[char] = self._normalize_template(char_img)
-                self.template_features[char] = self._extract_features(char_img)
-                logger.debug(f"Extraído da spritesheet: {char}")
-    
-    def _normalize_template(self, img: np.ndarray, size: Tuple[int, int] = (64, 80)) -> np.ndarray:
-        """Normaliza template para tamanho padrão."""
-        h, w = img.shape[:2]
-        
-        # Calcula escala mantendo proporção
-        scale = min(size[0] / w, size[1] / h) * 0.85
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        
-        if new_w < 1 or new_h < 1:
-            return np.ones((size[1], size[0]), dtype=np.uint8) * 255
-        
-        resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_AREA)
-        
-        # Centraliza em canvas
-        canvas = np.ones((size[1], size[0]), dtype=np.uint8) * 255
-        y_offset = (size[1] - new_h) // 2
-        x_offset = (size[0] - new_w) // 2
-        canvas[y_offset:y_offset+new_h, x_offset:x_offset+new_w] = resized
-        
-        return canvas
-    
-    def _extract_features(self, img: np.ndarray) -> Dict:
-        """
-        Extrai características geométricas do caractere para análise de vazamentos.
-        """
-        features = {
-            'aspect_ratio': 0.0,
-            'symmetry_score': 0.0,
-            'corner_count': 0,
-            'gap_regions': [],
-            'contour_area_ratio': 0.0,
-        }
-        
-        # Binariza
-        _, binary = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
-        
-        # Encontra contornos
-        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        if not contours:
-            return features
-        
-        # Usa o maior contorno
-        main_contour = max(contours, key=cv2.contourArea)
-        x, y, w, h = cv2.boundingRect(main_contour)
-        
-        # Aspect ratio
-        features['aspect_ratio'] = w / max(h, 1)
-        
-        # Área do contorno vs área do bounding box (indica preenchimento)
-        contour_area = cv2.contourArea(main_contour)
-        bbox_area = w * h
-        features['contour_area_ratio'] = contour_area / max(bbox_area, 1)
-        
-        # Detecta cantos usando Harris
-        gray_float = np.float32(binary)
-        corners = cv2.cornerHarris(gray_float, 2, 3, 0.04)
-        features['corner_count'] = np.sum(corners > 0.01 * corners.max())
-        
-        # Simetria vertical
-        if w > 10:
-            left_half = binary[:, :w//2]
-            right_half = cv2.flip(binary[:, w//2:], 1)
-            
-            # Ajusta tamanhos se necessário
-            min_w = min(left_half.shape[1], right_half.shape[1])
-            if min_w > 0:
-                left_half = left_half[:, :min_w]
-                right_half = right_half[:, :min_w]
-                
-                diff = cv2.absdiff(left_half, right_half)
-                features['symmetry_score'] = 1 - (np.sum(diff) / (255 * diff.size))
-        
-        # Detecta regiões de gap (áreas brancas internas)
-        features['gap_regions'] = self._detect_gaps(binary)
-        
-        return features
-    
-    def _detect_gaps(self, binary: np.ndarray) -> List[Dict]:
-        """
-        Detecta gaps/vazamentos no caractere.
-        Gaps são regiões brancas que indicam onde as linhas não se conectam.
-        """
-        gaps = []
-        
-        # Inverte para encontrar regiões brancas (gaps)
-        inverted = cv2.bitwise_not(binary)
-        
-        # Encontra contornos das regiões brancas internas
-        contours, hierarchy = cv2.findContours(
-            inverted, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-        )
-        
-        if hierarchy is None:
-            return gaps
-        
-        h, w = binary.shape
-        
-        for i, cnt in enumerate(contours):
-            # Verifica se é um contorno interno (não o fundo)
-            if hierarchy[0][i][3] != -1:  # Tem pai
-                x, y, cw, ch = cv2.boundingRect(cnt)
-                area = cv2.contourArea(cnt)
-                
-                # Calcula posição relativa
-                rel_x = (x + cw/2) / w
-                rel_y = (y + ch/2) / h
-                
-                if area > 20:  # Ignora ruído pequeno
-                    gaps.append({
-                        'position': (rel_x, rel_y),
-                        'area': area,
-                        'region': 'top' if rel_y < 0.33 else ('middle' if rel_y < 0.66 else 'bottom')
-                    })
-        
-        return gaps
+    def get_available_templates(self) -> List[str]:
+        """Retorna lista de caracteres com template disponível."""
+        return list(self.templates.keys())
     
     def analyze_character(
         self, 
         char_image: np.ndarray, 
-        expected_char: str,
-        position: int = 0
+        expected_char: str
     ) -> Dict:
         """
-        Analisa um caractere extraído comparando com template e verificando gaps.
+        Analisa um caractere extraído.
+        
+        Args:
+            char_image: Imagem do caractere (grayscale)
+            expected_char: Caractere esperado
+            
+        Returns:
+            Dict com análise detalhada
         """
         result = {
             'char': expected_char,
-            'position': position,
             'similarity_score': 0.0,
             'has_expected_gaps': True,
             'gap_analysis': {},
             'is_suspicious': False,
-            'is_high_risk': expected_char in settings.HIGH_RISK_CHARS,
-            'issues': []
+            'is_high_risk': expected_char in self.HIGH_RISK_CHARS,
+            'issues': [],
+            'extracted_features': {}
         }
         
-        expected_char = expected_char.upper()
-        
-        # Se não tiver template, faz análise apenas geométrica
-        if expected_char not in self.font_templates:
-            result['issues'].append(f"Template para '{expected_char}' não disponível")
-            # Faz análise geométrica mesmo sem template
-            features = self._extract_features(char_image)
-            result['extracted_features'] = features
+        if char_image is None or char_image.size == 0:
+            result['issues'].append("Imagem do caractere inválida")
             return result
         
-        template = self.font_templates[expected_char]
-        template_features = self.template_features.get(expected_char, {})
+        # Extrai características
+        features = self._extract_features(char_image)
+        result['extracted_features'] = features
         
-        # 1. Compara com template (SSIM)
-        char_normalized = self._normalize_template(char_image)
-        
-        try:
-            _, template_bin = cv2.threshold(template, 127, 255, cv2.THRESH_BINARY)
-            _, char_bin = cv2.threshold(char_normalized, 127, 255, cv2.THRESH_BINARY)
-            
-            similarity, _ = ssim(template_bin, char_bin, full=True)
+        # Compara com template
+        if expected_char in self.templates:
+            similarity = self._compare_with_template(char_image, expected_char)
             result['similarity_score'] = round(similarity * 100, 1)
-        except Exception as e:
-            logger.warning(f"Erro no SSIM: {e}")
-            result['issues'].append("Erro no cálculo de similaridade")
-        
-        # 2. Extrai features do caractere atual
-        current_features = self._extract_features(char_image)
-        result['extracted_features'] = current_features
-        
-        # 3. Verifica gaps esperados (ANÁLISE DE VAZAMENTOS)
-        gap_result = self._verify_gaps(expected_char, current_features, template_features)
-        result['gap_analysis'] = gap_result
-        result['has_expected_gaps'] = gap_result.get('gaps_match', True)
-        
-        if not result['has_expected_gaps']:
-            result['issues'].append(f"Vazamentos da fonte não correspondem ao esperado")
-            result['is_suspicious'] = True
-        
-        # 4. Verifica proporções
-        expected_props = self.HONDA_FONT_CHARACTERISTICS.get(expected_char, {})
-        if 'aspect_ratio' in expected_props:
-            min_ar, max_ar = expected_props['aspect_ratio']
-            actual_ar = current_features.get('aspect_ratio', 0)
             
-            if actual_ar < min_ar or actual_ar > max_ar:
-                result['issues'].append(
-                    f"Proporção incorreta: {actual_ar:.2f} (esperado: {min_ar:.2f}-{max_ar:.2f})"
-                )
+            if similarity < 0.6:
                 result['is_suspicious'] = True
+                result['issues'].append(f"Baixa similaridade com template: {similarity:.1%}")
+        else:
+            result['issues'].append(f"Template para '{expected_char}' não disponível")
         
-        # 5. Threshold de similaridade (mais rigoroso para alto risco)
-        threshold = settings.SSIM_THRESHOLD * 100
-        if result['is_high_risk']:
-            threshold *= 1.15  # 15% mais rigoroso
-        
-        if result['similarity_score'] < threshold and result['similarity_score'] > 0:
-            result['is_suspicious'] = True
-            result['issues'].append(
-                f"Similaridade {result['similarity_score']:.1f}% abaixo do limiar ({threshold:.1f}%)"
-            )
+        # Verifica características esperadas
+        if expected_char in self.HONDA_FONT_CHARACTERISTICS:
+            char_specs = self.HONDA_FONT_CHARACTERISTICS[expected_char]
+            
+            # Verifica proporção
+            ar_min, ar_max = char_specs['aspect_ratio_range']
+            if not (ar_min <= features['aspect_ratio'] <= ar_max):
+                result['is_suspicious'] = True
+                result['issues'].append(
+                    f"Proporção incorreta: {features['aspect_ratio']:.2f} "
+                    f"(esperado: {ar_min:.2f}-{ar_max:.2f})"
+                )
+            
+            # Verifica gaps
+            if char_specs.get('has_internal_gap'):
+                gap_result = self._verify_gaps(char_image, expected_char)
+                result['gap_analysis'] = gap_result
+                if not gap_result.get('gaps_match', True):
+                    result['has_expected_gaps'] = False
+                    result['issues'].append("Vazamentos da fonte não correspondem ao esperado")
         
         return result
     
-    def _verify_gaps(
-        self, 
-        char: str, 
-        current_features: Dict, 
-        template_features: Dict
-    ) -> Dict:
-        """
-        Verifica se os gaps/vazamentos do caractere correspondem ao esperado.
-        Esta é a análise crucial para detectar falsificações.
-        """
+    def _extract_features(self, char_image: np.ndarray) -> Dict:
+        """Extrai características de um caractere."""
+        # Garante binário
+        if len(char_image.shape) == 3:
+            char_image = cv2.cvtColor(char_image, cv2.COLOR_BGR2GRAY)
+        
+        _, binary = cv2.threshold(char_image, 127, 255, cv2.THRESH_BINARY)
+        
+        # Proporção
+        h, w = binary.shape
+        aspect_ratio = w / h if h > 0 else 0
+        
+        # Simetria horizontal
+        left_half = binary[:, :w//2]
+        right_half = cv2.flip(binary[:, w//2:], 1)
+        
+        min_w = min(left_half.shape[1], right_half.shape[1])
+        if min_w > 0:
+            left_half = left_half[:, :min_w]
+            right_half = right_half[:, :min_w]
+            symmetry = 1 - np.sum(np.abs(left_half.astype(float) - right_half.astype(float))) / (255 * h * min_w)
+        else:
+            symmetry = 0
+        
+        # Contagem de cantos
+        corners = cv2.goodFeaturesToTrack(binary, 100, 0.01, 5)
+        corner_count = len(corners) if corners is not None else 0
+        
+        # Regiões de gap
+        gap_regions = self._find_gap_regions(binary)
+        
+        # Área relativa
+        contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours:
+            main_contour = max(contours, key=cv2.contourArea)
+            contour_area = cv2.contourArea(main_contour)
+            total_area = h * w
+            area_ratio = contour_area / total_area if total_area > 0 else 0
+        else:
+            area_ratio = 0
+        
+        return {
+            'aspect_ratio': float(aspect_ratio),
+            'symmetry_score': float(symmetry),
+            'corner_count': int(corner_count),
+            'gap_regions': gap_regions,
+            'contour_area_ratio': float(area_ratio)
+        }
+    
+    def _find_gap_regions(self, binary: np.ndarray) -> List[Dict]:
+        """Encontra regiões de gap (vazamentos) no caractere."""
+        gaps = []
+        
+        # Inverte para encontrar buracos
+        inverted = cv2.bitwise_not(binary)
+        contours, _ = cv2.findContours(inverted, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        h, w = binary.shape
+        
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 20:  # Ignora ruído
+                M = cv2.moments(contour)
+                if M['m00'] > 0:
+                    cx = M['m10'] / M['m00']
+                    cy = M['m01'] / M['m00']
+                    
+                    # Determina região
+                    region = 'middle'
+                    if cy < h * 0.33:
+                        region = 'top'
+                    elif cy > h * 0.66:
+                        region = 'bottom'
+                    
+                    gaps.append({
+                        'position': (float(cx / w), float(cy / h)),
+                        'area': float(area),
+                        'region': region
+                    })
+        
+        return gaps
+    
+    def _compare_with_template(self, char_image: np.ndarray, char: str) -> float:
+        """Compara caractere com template usando múltiplos métodos."""
+        if char not in self.templates:
+            return 0.0
+        
+        template = self.templates[char]
+        
+        # Prepara imagem
+        if len(char_image.shape) == 3:
+            char_image = cv2.cvtColor(char_image, cv2.COLOR_BGR2GRAY)
+        
+        # Redimensiona para tamanho do template
+        char_resized = cv2.resize(char_image, (template.shape[1], template.shape[0]))
+        _, char_binary = cv2.threshold(char_resized, 127, 255, cv2.THRESH_BINARY)
+        
+        # Método 1: Correlação normalizada
+        result = cv2.matchTemplate(char_binary, template, cv2.TM_CCOEFF_NORMED)
+        correlation = float(result[0][0]) if result.size > 0 else 0
+        
+        # Método 2: Diferença de pixels
+        diff = np.abs(char_binary.astype(float) - template.astype(float))
+        pixel_similarity = 1 - np.mean(diff) / 255
+        
+        # Combina métodos
+        similarity = 0.6 * max(0, correlation) + 0.4 * pixel_similarity
+        
+        return min(1.0, max(0.0, similarity))
+    
+    def _verify_gaps(self, char_image: np.ndarray, char: str) -> Dict:
+        """Verifica se os gaps característicos estão presentes."""
         result = {
             'char': char,
             'gaps_match': True,
@@ -392,60 +296,38 @@ class FontAnalyzer:
             'notes': []
         }
         
-        char_props = self.HONDA_FONT_CHARACTERISTICS.get(char, {})
+        if char not in self.HONDA_FONT_CHARACTERISTICS:
+            return result
         
-        # Verifica gap crítico do "4"
-        if char == '4' and char_props.get('has_critical_gap'):
-            result['expected_gap_count'] = 1
-            current_gaps = current_features.get('gap_regions', [])
-            middle_gaps = [g for g in current_gaps if g.get('region') == 'middle']
-            result['detected_gap_count'] = len(middle_gaps)
-            
-            if len(middle_gaps) == 0:
+        specs = self.HONDA_FONT_CHARACTERISTICS[char]
+        
+        if not specs.get('has_internal_gap'):
+            return result
+        
+        # Extrai gaps
+        if len(char_image.shape) == 3:
+            char_image = cv2.cvtColor(char_image, cv2.COLOR_BGR2GRAY)
+        _, binary = cv2.threshold(char_image, 127, 255, cv2.THRESH_BINARY)
+        
+        gaps = self._find_gap_regions(binary)
+        
+        expected_gaps = specs.get('expected_gaps', [])
+        result['expected_gap_count'] = len(expected_gaps)
+        result['detected_gap_count'] = len(gaps)
+        
+        # Verifica específicos por caractere
+        if char == '4':
+            # O "4" Honda tem gap no meio onde as linhas se encontram
+            middle_gaps = [g for g in gaps if g['region'] == 'middle']
+            if not middle_gaps:
                 result['gaps_match'] = False
-                result['notes'].append(
-                    "⚠️ ALERTA: '4' sem gap característico - possível adulteração de '9' ou '1'"
-                )
+                result['notes'].append("Gap central do '4' não detectado - possível adulteração")
         
-        # Verifica círculos fechados do "0"
-        elif char == '0':
-            current_gaps = current_features.get('gap_regions', [])
-            if len(current_gaps) > 0:
+        elif char == '3':
+            # O "3" tem duas aberturas à esquerda
+            if len(gaps) < 2:
                 result['gaps_match'] = False
-                result['notes'].append(
-                    "⚠️ ALERTA: '0' com aberturas internas - possível adulteração de '6', '8' ou '9'"
-                )
-        
-        # Verifica aberturas do "3"
-        elif char == '3' and char_props.get('has_left_gaps'):
-            # O 3 deve ter aberturas à esquerda
-            current_gaps = current_features.get('gap_regions', [])
-            left_gaps = [g for g in current_gaps if g['position'][0] < 0.4]
-            
-            if len(left_gaps) < 2:
-                result['notes'].append(
-                    "Verificar: '3' pode ter sido adulterado de '8'"
-                )
-        
-        # Verifica cauda do "9"
-        elif char == '9' and char_props.get('tail_curve'):
-            current_gaps = current_features.get('gap_regions', [])
-            top_gaps = [g for g in current_gaps if g.get('region') == 'top']
-            
-            # O 9 deve ter o círculo superior fechado
-            if len(top_gaps) > 0:
-                result['notes'].append(
-                    "Verificar: '9' com abertura no topo - possível adulteração"
-                )
-        
-        # Verifica "1" - deve ser estreito
-        elif char == '1':
-            ar = current_features.get('aspect_ratio', 0)
-            if ar > 0.4:  # Muito largo para um "1"
-                result['gaps_match'] = False
-                result['notes'].append(
-                    f"⚠️ ALERTA: '1' muito largo (ratio: {ar:.2f}) - possível adulteração de '7' ou '4'"
-                )
+                result['notes'].append("Aberturas do '3' não detectadas corretamente")
         
         return result
     
@@ -458,52 +340,34 @@ class FontAnalyzer:
         
         Args:
             char_images: Lista de (imagem, caractere, posição)
+            
+        Returns:
+            Dict com análise completa
         """
         results = {
-            'total_analyzed': 0,
-            'suspicious_count': 0,
-            'high_risk_suspicious': 0,
-            'gap_issues_count': 0,
-            'overall_score': 0.0,
             'characters': [],
-            'alerts': []
+            'alerts': [],
+            'high_risk_count': 0,
+            'suspicious_count': 0
         }
         
-        if not char_images:
-            results['alerts'].append("Nenhum caractere para analisar")
-            return results
-        
-        scores = []
-        
-        for char_img, char_text, position in char_images:
-            analysis = self.analyze_character(char_img, char_text, position)
+        for img, char, position in char_images:
+            analysis = self.analyze_character(img, char)
+            analysis['position'] = position
             results['characters'].append(analysis)
-            results['total_analyzed'] += 1
             
-            if analysis['similarity_score'] > 0:
-                scores.append(analysis['similarity_score'])
+            if analysis['is_high_risk']:
+                results['high_risk_count'] += 1
+                if analysis['is_suspicious']:
+                    results['alerts'].append(
+                        f"⚠️ Caractere de ALTO RISCO '{char}' (pos {position}) suspeito"
+                    )
             
             if analysis['is_suspicious']:
                 results['suspicious_count'] += 1
-                
-                if analysis['is_high_risk']:
-                    results['high_risk_suspicious'] += 1
-                    results['alerts'].append(
-                        f"⚠️ Caractere de ALTO RISCO '{analysis['char']}' (pos {position}) suspeito"
-                    )
             
-            if not analysis['has_expected_gaps']:
-                results['gap_issues_count'] += 1
-            
-            # Adiciona notas do gap_analysis aos alertas
-            gap_notes = analysis.get('gap_analysis', {}).get('notes', [])
-            results['alerts'].extend(gap_notes)
-        
-        if scores:
-            results['overall_score'] = round(sum(scores) / len(scores), 1)
+            # Alertas específicos de gap
+            for note in analysis.get('gap_analysis', {}).get('notes', []):
+                results['alerts'].append(note)
         
         return results
-    
-    def get_available_templates(self) -> List[str]:
-        """Retorna caracteres com template disponível."""
-        return list(self.font_templates.keys())

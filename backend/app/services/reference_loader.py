@@ -1,144 +1,139 @@
+"""
+Carregador de imagens de referência para comparação visual.
+"""
+
+import os
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Optional, Dict, List
 from app.core.config import settings
 from app.core.logger import logger
 
 
 class ReferenceLoader:
     """
-    Carregador de imagens de referência para comparação visual.
+    Gerencia imagens de referência de motores Honda.
     
-    Estrutura de diretórios para MOTOR:
+    Estrutura esperada:
     data/references/
     └── HONDA/
         └── MOTOR/
             └── {ANO}/
-                └── {PREFIXO}.jpg  (ex: MC27E.jpg, MD09E1.jpg)
-    
-    OU estrutura simplificada:
-    data/references/
-    └── HONDA/
-        └── {ANO}/
-            └── motor.jpg
+                └── {PREFIXO}.jpg
     """
     
-    BASE_PATH = settings.REFERENCES_DIR
-    SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp']
+    BASE_PATH = Path(settings.REFERENCES_DIR)
+    
+    @classmethod
+    def ensure_directories(cls):
+        """Cria estrutura de diretórios se não existir."""
+        dirs_to_create = [
+            cls.BASE_PATH,
+            cls.BASE_PATH / "HONDA",
+            cls.BASE_PATH / "HONDA" / "MOTOR",
+            cls.BASE_PATH / "HONDA" / "MOTOR" / "default",
+        ]
+        
+        for dir_path in dirs_to_create:
+            dir_path.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Diretórios de referência verificados: {cls.BASE_PATH}")
     
     @classmethod
     def get_motor_reference(
-        cls,
-        year: int,
+        cls, 
+        year: int, 
         prefix: Optional[str] = None
     ) -> Optional[str]:
         """
-        Busca imagem de referência de motor.
+        Busca imagem de referência para um motor.
         
         Args:
-            year: Ano do veículo
-            prefix: Prefixo do motor (ex: MC27E) - opcional
+            year: Ano do modelo
+            prefix: Prefixo do motor (ex: MD09E1)
             
         Returns:
-            Caminho do arquivo ou None
+            Caminho da imagem ou None
         """
-        search_paths = []
+        if not prefix:
+            return None
         
-        # 1. Caminho específico com prefixo
-        if prefix:
-            prefix_clean = prefix.upper().replace('-', '')
-            search_paths.append(
-                cls.BASE_PATH / "HONDA" / "MOTOR" / str(year) / prefix_clean
-            )
-            search_paths.append(
-                cls.BASE_PATH / "HONDA" / str(year) / prefix_clean
-            )
+        # Tenta ano exato
+        ref_path = cls.BASE_PATH / "HONDA" / "MOTOR" / str(year) / f"{prefix}.jpg"
+        if ref_path.exists():
+            return str(ref_path)
         
-        # 2. Caminho genérico por ano
-        search_paths.append(cls.BASE_PATH / "HONDA" / "MOTOR" / str(year) / "motor")
-        search_paths.append(cls.BASE_PATH / "HONDA" / str(year) / "motor")
+        # Tenta anos próximos (±2)
+        for delta in [1, -1, 2, -2]:
+            ref_path = cls.BASE_PATH / "HONDA" / "MOTOR" / str(year + delta) / f"{prefix}.jpg"
+            if ref_path.exists():
+                return str(ref_path)
         
-        # 3. Fallback: anos próximos
-        for offset in [-1, 1, -2, 2]:
-            alt_year = year + offset
-            if prefix:
-                search_paths.append(
-                    cls.BASE_PATH / "HONDA" / "MOTOR" / str(alt_year) / prefix.upper()
-                )
-            search_paths.append(
-                cls.BASE_PATH / "HONDA" / "MOTOR" / str(alt_year) / "motor"
-            )
-            search_paths.append(
-                cls.BASE_PATH / "HONDA" / str(alt_year) / "motor"
-            )
-        
-        # 4. Fallback: referência padrão
-        search_paths.append(cls.BASE_PATH / "HONDA" / "MOTOR" / "default" / "motor")
-        search_paths.append(cls.BASE_PATH / "HONDA" / "default" / "motor")
-        
-        # Tenta encontrar
-        for path in search_paths:
-            found = cls._find_with_extensions(path)
-            if found:
-                logger.debug(f"Referência encontrada: {found}")
-                return str(found)
-        
-        logger.warning(f"Referência não encontrada para Honda Motor {year} (prefix: {prefix})")
-        return None
-    
-    @classmethod
-    def _find_with_extensions(cls, base_path: Path) -> Optional[Path]:
-        """Tenta encontrar arquivo com qualquer extensão suportada."""
-        for ext in cls.SUPPORTED_EXTENSIONS:
-            full_path = base_path.with_suffix(ext)
-            if full_path.exists():
-                return full_path
-        
-        if base_path.exists() and base_path.is_file():
-            return base_path
+        # Tenta default
+        ref_path = cls.BASE_PATH / "HONDA" / "MOTOR" / "default" / f"{prefix}.jpg"
+        if ref_path.exists():
+            return str(ref_path)
         
         return None
     
     @classmethod
     def list_available_references(cls) -> Dict:
-        """Lista todas as referências de motor disponíveis."""
-        references = []
-        
-        honda_path = cls.BASE_PATH / "HONDA"
-        if not honda_path.exists():
-            return {'total': 0, 'references': [], 'error': 'Diretório HONDA não existe'}
-        
-        # Procura em todas as subpastas
-        for year_dir in honda_path.rglob('*'):
-            if not year_dir.is_dir():
-                continue
-            
-            for file in year_dir.iterdir():
-                if file.is_file() and file.suffix.lower() in cls.SUPPORTED_EXTENSIONS:
-                    references.append({
-                        'year': year_dir.name,
-                        'name': file.stem,
-                        'path': str(file)
-                    })
-        
-        return {
-            'total': len(references),
-            'references': references
+        """Lista todas as referências disponíveis."""
+        result = {
+            "total": 0,
+            "by_year": {},
+            "prefixes": set()
         }
+        
+        motor_path = cls.BASE_PATH / "HONDA" / "MOTOR"
+        
+        if not motor_path.exists():
+            return result
+        
+        for year_dir in motor_path.iterdir():
+            if year_dir.is_dir():
+                year = year_dir.name
+                result["by_year"][year] = []
+                
+                for ref_file in year_dir.glob("*.jpg"):
+                    prefix = ref_file.stem
+                    result["by_year"][year].append(prefix)
+                    result["prefixes"].add(prefix)
+                    result["total"] += 1
+        
+        result["prefixes"] = sorted(list(result["prefixes"]))
+        
+        return result
     
     @classmethod
-    def ensure_directories(cls):
-        """Cria estrutura de diretórios se não existir."""
-        directories = [
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "default",
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "2020",
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "2021",
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "2022",
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "2023",
-            cls.BASE_PATH / "HONDA" / "MOTOR" / "2024",
-            settings.FONTS_DIR,
-        ]
+    def save_reference(
+        cls,
+        image_bytes: bytes,
+        year: int,
+        prefix: str
+    ) -> Optional[str]:
+        """
+        Salva uma nova imagem de referência.
         
-        for dir_path in directories:
-            dir_path.mkdir(parents=True, exist_ok=True)
-        
-        logger.info(f"Diretórios criados em: {cls.BASE_PATH}")
+        Args:
+            image_bytes: Bytes da imagem
+            year: Ano do modelo
+            prefix: Prefixo do motor
+            
+        Returns:
+            Caminho onde foi salvo ou None se falhou
+        """
+        try:
+            year_dir = cls.BASE_PATH / "HONDA" / "MOTOR" / str(year)
+            year_dir.mkdir(parents=True, exist_ok=True)
+            
+            ref_path = year_dir / f"{prefix.upper()}.jpg"
+            
+            with open(ref_path, "wb") as f:
+                f.write(image_bytes)
+            
+            logger.info(f"Referência salva: {ref_path}")
+            return str(ref_path)
+            
+        except Exception as e:
+            logger.error(f"Erro ao salvar referência: {e}")
+            return None

@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-12-21T13:43:13.328129",
+  "api_url": "http://localhost:8000",
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "warnings": 0
+  },
+  "tests": []
+}

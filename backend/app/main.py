@@ -1,36 +1,24 @@
 """
-PRF Honda Inspector - API de Análise de Motor
-=============================================
-
-Sistema forense para identificação de fraudes em números de motor
-de motocicletas Honda.
-
-Foco: Apenas análise de MOTOR (não chassi)
+PRF Honda Inspector - API v5.0.1
+================================
+Melhor tratamento de erros
 """
 
-import re
+import numpy as np
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
+from typing import Optional, List
 
-from app.services.ocr import OCREngine
-from app.services.anomaly_service import AnomalyService
-from app.services.visual_matcher import VisualMatcher
-from app.services.reference_loader import ReferenceLoader
-from app.services.font_analyzer import FontAnalyzer
-from app.database.honda_motor_specs import HondaMotorSpecs
+from app.services.forensic_ai_service import ForensicAIService
 from app.domain.schemas import FinalResponse
 from app.core.logger import logger
-from app.core.config import settings
 
-# Inicializa FastAPI
 app = FastAPI(
-    title="PRF Honda Inspector - Motor",
-    version="2.0.0",
-    description="Sistema Forense de Identificação de Fraudes em Motores Honda"
+    title="PRF Honda Inspector",
+    version="5.0.1",
+    description="Análise comparativa com banco de referências"
 )
 
-# CORS para acesso do app mobile
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -39,253 +27,227 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inicialização dos Serviços (Singleton)
-logger.info("Inicializando serviços...")
-ocr_engine = OCREngine()
-anomaly_svc = AnomalyService()
-visual_svc = VisualMatcher()
-font_analyzer = FontAnalyzer()
+logger.info("=" * 60)
+logger.info("PRF Honda Inspector v5.0.1")
+logger.info("=" * 60)
 
-# Garante estrutura de diretórios
-ReferenceLoader.ensure_directories()
-logger.info("API pronta para receber requisições")
+forensic_ai = ForensicAIService()
+
+stats = forensic_ai.get_stats()
+logger.info(f"IA: {'✓' if forensic_ai.enabled else '✗'}")
+logger.info(f"Supabase: {'✓' if forensic_ai.supabase else '✗'}")
+logger.info(f"Refs: {stats['originals']} originais, {stats['frauds']} fraudes")
+logger.info("=" * 60)
+
+
+def convert_numpy(obj):
+    if isinstance(obj, dict):
+        return {k: convert_numpy(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy(i) for i in obj]
+    elif isinstance(obj, (np.integer,)):
+        return int(obj)
+    elif isinstance(obj, (np.floating,)):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return obj
 
 
 @app.get("/")
 async def root():
-    """Endpoint raiz."""
+    stats = forensic_ai.get_stats()
     return {
-        "name": "PRF Honda Inspector - Motor",
-        "version": "2.0.0",
-        "status": "online"
+        "name": "PRF Honda Inspector",
+        "version": "5.0.1",
+        "ai_enabled": forensic_ai.enabled,
+        "supabase": forensic_ai.supabase is not None,
+        "references": stats
     }
-
-
-@app.get("/health")
-async def health_check():
-    """Verificação de saúde do serviço."""
-    return {
-        "status": "healthy",
-        "version": "2.0.0",
-        "templates_loaded": len(font_analyzer.get_available_templates()),
-        "high_risk_chars": settings.HIGH_RISK_CHARS
-    }
-
-
-@app.get("/references")
-async def list_references():
-    """Lista referências de motor disponíveis."""
-    return ReferenceLoader.list_available_references()
-
-
-@app.get("/fonts")
-async def list_fonts():
-    """Lista templates de fonte carregados."""
-    templates = font_analyzer.get_available_templates()
-    return {
-        "total": len(templates),
-        "characters": sorted(templates),
-        "high_risk": settings.HIGH_RISK_CHARS
-    }
-
-
-@app.get("/prefixes")
-async def list_prefixes():
-    """Lista prefixos de motor Honda conhecidos."""
-    prefixes = []
-    for prefix, (model, cc) in HondaMotorSpecs.ENGINE_PREFIXES.items():
-        prefixes.append({
-            "prefix": prefix,
-            "model": model,
-            "cc": cc
-        })
-    return {"total": len(prefixes), "prefixes": prefixes}
 
 
 @app.post("/analyze/motor", response_model=FinalResponse)
 async def analyze_motor(
-    photo: UploadFile = File(..., description="Foto do número de motor"),
-    year: int = Form(..., description="Ano do modelo (ex: 2020)"),
-    model: Optional[str] = Form(None, description="Modelo da moto (ex: CG 160) - opcional"),
+    photo: UploadFile = File(...),
+    year: int = Form(...),
+    model: Optional[str] = Form(None)
 ):
-    """
-    Analisa número de motor de motocicleta Honda.
-    
-    Análises realizadas:
-    - OCR: Leitura do número gravado
-    - Formato: Validação do padrão Honda (prefixo + serial)
-    - Forense: Micropunção, alinhamento, densidade de pontos
-    - Tipográfica: Comparação com fonte Honda, detecção de vazamentos
-    - Visual: Comparação com banco de referências
-    
-    Caracteres de alto risco (mais falsificados): 0, 1, 3, 4, 9
-    """
+    """Analisa motor com referências."""
     try:
-        logger.info(f"=== Iniciando análise de motor: Honda {model or 'N/I'} {year} ===")
+        logger.info("=" * 50)
+        logger.info(f"ANÁLISE v5.0.1 | Ano: {year}")
+        logger.info("=" * 50)
         
-        # 1. Leitura OCR
         content = await photo.read()
-        raw_text, ocr_details, char_images = ocr_engine.process_image(content)
+        result = forensic_ai.analyze(content, year, model)
+        verdict = forensic_ai.get_verdict(result['risk_score'])
         
-        # Limpeza do texto (mantém hífen para separar prefixo do serial)
-        clean_code = re.sub(r'[^A-Z0-9-]', '', raw_text.upper())
-        logger.info(f"Código lido: {clean_code}")
+        logger.info(f"CÓDIGO: {result['read_code']}")
+        logger.info(f"SCORE: {result['risk_score']} -> {verdict}")
         
-        # 2. Validação de formato do motor Honda
-        engine_validation = HondaMotorSpecs.validate_engine_format(clean_code)
-        logger.info(f"Validação: {engine_validation}")
+        explanations = result.get('risk_factors', []).copy()
+        explanations.extend(result.get('recommendations', []))
         
-        # 3. Obtém métricas detalhadas dos caracteres
-        ocr_metrics = ocr_engine.get_character_metrics(content)
-        
-        # 4. Análise Forense (anomalias, vazamentos, etc)
-        expected_type = HondaMotorSpecs.get_expected_marking_type(year)
-        forensic_result = anomaly_svc.analyze(
-            content, 
-            ocr_metrics, 
-            expected_type,
-            char_images
-        )
-        logger.info(f"Forense: status={forensic_result['status']}, tipo={forensic_result['detected_type']}")
-        
-        # 5. Comparação visual (se houver referência)
-        ref_path = ReferenceLoader.get_motor_reference(
-            year, 
-            engine_validation.get('prefix')
-        )
-        visual_result = visual_svc.compare(content, ref_path)
-        
-        # 6. Calcula score de risco e monta resposta
-        score, reasons = _calculate_risk_score(
-            engine_validation,
-            forensic_result,
-            visual_result,
-            expected_type
-        )
-        
-        verdict = _determine_verdict(score)
-        logger.info(f"=== Resultado: {verdict} (score: {score}) ===")
-        
-        # Monta resposta
         return FinalResponse(
             verdict=verdict,
-            risk_score=min(score, 100),
-            read_code=clean_code,
-            prefix=engine_validation.get('prefix'),
-            serial=engine_validation.get('serial'),
-            expected_model=engine_validation.get('model_info', [None])[0] if engine_validation.get('model_info') else None,
-            components={
-                "engine_validation": engine_validation,
-                "forensic": forensic_result,
-                "visual": visual_result
-            },
-            explanation=reasons
+            risk_score=result['risk_score'],
+            read_code=result['read_code'],
+            prefix=result['prefix'],
+            serial=result['serial'],
+            expected_model=result['expected_model'],
+            components=convert_numpy({
+                "ai_analysis": {
+                    "success": result['success'],
+                    "detected_type": result['detected_type'],
+                    "expected_type": result['expected_type'],
+                    "type_match": result['type_match'],
+                    "has_mixed_types": result.get('has_mixed_types', False),
+                    "alignment": result.get('alignment_analysis', {}),
+                    "font_consistency": result.get('font_consistency', {}),
+                    "repeated_chars": result.get('repeated_chars_analysis', [])
+                },
+                "references_used": result.get('references_used', {}),
+                "year": year
+            }),
+            explanation=explanations
         )
         
     except Exception as e:
-        logger.error(f"Erro na análise: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+        logger.error(f"Erro: {e}", exc_info=True)
+        raise HTTPException(500, str(e))
 
 
-# Endpoint legado para compatibilidade com app existente
-@app.post("/analyze/vin", response_model=FinalResponse)
-async def analyze_vin_legacy(
+# ========================================
+# MOTORES ORIGINAIS
+# ========================================
+
+@app.post("/references/originals/add")
+async def add_original(
+    code: str = Form(..., description="Código: KC08E57083003 ou KC08E5-7083003"),
+    year: int = Form(..., description="Ano do veículo"),
+    engraving_type: str = Form(..., description="laser ou estampagem"),
     photo: UploadFile = File(...),
-    year: int = Form(...),
-    model: str = Form(...),
-    component: str = Form(...)
+    model: Optional[str] = Form(None),
+    description: Optional[str] = Form(None)
 ):
     """
-    Endpoint legado para compatibilidade.
-    Redireciona para análise de motor.
+    Cadastra motor ORIGINAL.
+    
+    - code: Código completo (com ou sem hífen)
+    - year: Ano do veículo
+    - engraving_type: 'laser' ou 'estampagem' (minúsculo)
+    - photo: Imagem JPG
     """
-    return await analyze_motor(photo, year, model)
+    if not forensic_ai.supabase:
+        raise HTTPException(503, "Supabase não configurado")
+    
+    # Normaliza engraving_type para minúsculo
+    engraving_type = engraving_type.lower().strip()
+    
+    if engraving_type not in ['laser', 'estampagem']:
+        raise HTTPException(400, f"engraving_type deve ser 'laser' ou 'estampagem', recebido: '{engraving_type}'")
+    
+    content = await photo.read()
+    
+    success, message = forensic_ai.add_original(
+        code, year, engraving_type, content, model, description
+    )
+    
+    if success:
+        return {
+            "status": "success",
+            "message": message,
+            "code": code.upper(),
+            "year": year,
+            "type": engraving_type
+        }
+    
+    raise HTTPException(500, message)
 
 
-def _calculate_risk_score(
-    validation: dict,
-    forensic: dict,
-    visual: dict,
-    expected_type: str
-) -> tuple:
+@app.get("/references/originals/list")
+async def list_originals():
+    """Lista motores originais."""
+    originals = forensic_ai.list_originals()
+    return {"total": len(originals), "originals": originals}
+
+
+# ========================================
+# MOTORES ADULTERADOS
+# ========================================
+
+@app.post("/references/frauds/add")
+async def add_fraud(
+    fraud_code: str = Form(..., description="Código visível"),
+    fraud_type: str = Form(..., description="mistura_tipos, regravacao_parcial, etc"),
+    description: str = Form(..., description="Descrição da fraude"),
+    photo: UploadFile = File(...),
+    original_code: Optional[str] = Form(None),
+    indicators: Optional[str] = Form(None, description="Indicadores separados por vírgula"),
+    year_claimed: Optional[int] = Form(None)
+):
     """
-    Calcula score de risco (0-100) e lista de razões.
+    Cadastra motor ADULTERADO.
     
-    Pesos:
-    - Validação de formato: até 25 pontos
-    - Análise forense: até 45 pontos
-    - Comparação visual: até 30 pontos
+    Tipos de fraude:
+    - mistura_tipos
+    - regravacao_total
+    - regravacao_parcial
+    - desalinhamento
+    - fonte_diferente
+    - lixamento
     """
-    score = 0
-    reasons = []
+    if not forensic_ai.supabase:
+        raise HTTPException(503, "Supabase não configurado")
     
-    # 1. Validação de formato (0-25 pontos)
-    if not validation.get('valid', False):
-        issues = validation.get('issues', [])
-        score += min(len(issues) * 8, 25)
-        reasons.extend(issues)
+    content = await photo.read()
+    indicators_list = [i.strip() for i in indicators.split(',')] if indicators else []
     
-    # 2. Análise forense (0-45 pontos)
-    forensic_status = forensic.get('status', 'OK')
+    success, message = forensic_ai.add_fraud(
+        fraud_code, fraud_type, description, content,
+        original_code, indicators_list, year_claimed
+    )
     
-    if forensic_status == 'SUSPEITO':
-        score += 20
-    elif forensic_status == 'ATENÇÃO':
-        score += 10
+    if success:
+        return {
+            "status": "success",
+            "message": message,
+            "fraud_code": fraud_code.upper(),
+            "fraud_type": fraud_type
+        }
     
-    # Outliers (anomalias detectadas)
-    outliers = forensic.get('outliers', [])
-    score += min(len(outliers) * 5, 15)
-    
-    for outlier in outliers:
-        reasons.append(
-            f"'{outlier.get('char', '?')}' (pos {outlier.get('position', '?')}): {outlier.get('reason', 'anomalia')}"
-        )
-    
-    # Divergência de tipo de gravação
-    detected_type = forensic.get('detected_type', 'UNKNOWN')
-    if detected_type != expected_type and detected_type != 'UNKNOWN':
-        score += 10
-        reasons.append(
-            f"Tipo de gravação: detectado {detected_type}, esperado {expected_type}"
-        )
-    
-    # Alertas de alto risco (vazamentos, etc)
-    high_risk_alerts = forensic.get('high_risk_alerts', [])
-    for alert in high_risk_alerts:
-        if '⚠️' in alert:  # Alertas críticos
-            score += 8
-        else:
-            score += 3
-        reasons.append(alert)
-    
-    # 3. Comparação visual (0-30 pontos)
-    visual_status = visual.get('status', 'SEM_REFERÊNCIA')
-    
-    if visual_status == 'DIVERGENTE':
-        score += 30
-        reasons.append(
-            f"Padrão visual divergente (similaridade: {visual.get('similarity', 0)}%)"
-        )
-    elif visual_status == 'SEM_REFERÊNCIA':
-        reasons.append("Nota: Sem imagem de referência para comparação visual")
-    
-    return score, reasons
+    raise HTTPException(500, message)
 
 
-def _determine_verdict(score: int) -> str:
-    """Determina veredito baseado no score."""
-    if score <= 10:
-        return "REGULAR"
-    elif score <= 30:
-        return "ATENÇÃO"
-    elif score <= 60:
-        return "SUSPEITO"
-    else:
-        return "ALTA SUSPEITA DE FRAUDE"
+@app.get("/references/frauds/list")
+async def list_frauds():
+    """Lista fraudes."""
+    frauds = forensic_ai.list_frauds()
+    return {"total": len(frauds), "frauds": frauds}
 
 
-# Inicialização direta
+# ========================================
+# DEBUG E STATS
+# ========================================
+
+@app.get("/references/stats")
+async def get_stats():
+    """Estatísticas."""
+    return forensic_ai.get_stats()
+
+
+@app.get("/debug/supabase")
+async def debug_supabase():
+    """Debug Supabase."""
+    return forensic_ai.debug_supabase()
+
+
+@app.get("/health")
+async def health():
+    stats = forensic_ai.get_stats()
+    return {"status": "healthy", "version": "5.0.1", "references": stats}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

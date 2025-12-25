@@ -8,11 +8,15 @@ class HondaMotorSpecs:
     Formato do Número de Motor Honda:
     - Prefixo: Código do modelo do motor (ex: MC27E, MD09E1)
     - Separador: Hífen (-) - pode ou não estar presente na gravação
-    - Sequencial: Número de série (6-8 dígitos)
+    - Sequencial: Número de série (letra opcional + 6-7 dígitos)
     
     Exemplos reais:
     - MC27E-1009153 (CG 160)
     - MD09E1-B215797 (XRE 300)
+    
+    TIPOS DE GRAVAÇÃO:
+    - ESTAMPAGEM: Antes de 2010 - caracteres sólidos, prensados no metal
+    - LASER: A partir de 2010 - gravação a laser, linhas finas e precisas
     """
     
     # Prefixos de Motor Honda válidos conhecidos
@@ -26,9 +30,9 @@ class HondaMotorSpecs:
         'JC75E': ('CG 160 Titan', 160),
         'JC79E': ('CG 160 Fan', 160),
         
-        # XRE Series
-        'MD09E': ('XRE 300', 300),
-        'MD09E1': ('XRE 300', 300),
+        # XRE Series - IMPORTANTE: MD09E1 é diferente de MD09E!
+        'MD09E1': ('XRE 300', 300),  # Prefixo mais comum da XRE 300
+        'MD09E': ('XRE 300', 300),   # Variação
         'MD44E': ('XRE 190', 190),
         
         # CB Series
@@ -61,21 +65,19 @@ class HondaMotorSpecs:
     }
     
     # Regex para validar formato do número de motor Honda
-    # Grupos: (prefixo)(hífen opcional)(serial)
+    # Grupos: (prefixo)(hífen opcional)(serial: letra opcional + números)
     ENGINE_NUMBER_PATTERN = re.compile(
         r'^([A-Z]{2,4}\d{0,2}[A-Z]?\d?)-?([A-Z]?\d{6,8})$',
         re.IGNORECASE
     )
     
     # Caracteres proibidos (confundem com números)
-    FORBIDDEN_CHARS = {'I', 'O', 'Q'}
+    FORBIDDEN_CHARS = {'I', 'O', 'Q'}  # Removido da validação porque agora corrigimos
     
     # Caracteres de alto risco para falsificação
     HIGH_RISK_CHARS = ['0', '1', '3', '4', '9']
     
     # Características dos "vazamentos" (gaps) na fonte Honda
-    # Baseado na análise da imagem de referência
-    # Formato: char -> lista de descrições dos gaps esperados
     FONT_GAPS = {
         '0': ['oval fechada sem gaps internos', 'proporção altura/largura ~1.5'],
         '1': ['base reta', 'topo com serifa pequena à esquerda'],
@@ -93,10 +95,13 @@ class HondaMotorSpecs:
     def get_expected_marking_type(year: int) -> str:
         """
         Determina o tipo de marcação esperado baseado no ano.
-        - Antes de 2010: Estampagem (STAMPED) - caracteres sólidos
-        - A partir de 2010: Laser/Micropunção (MICROPOINT) - formado por pontos
+        
+        - Antes de 2010: ESTAMPAGEM - caracteres sólidos, prensados
+        - A partir de 2010: LASER - gravação a laser, linhas finas
+        
+        NÃO existe "MICROPOINT" em motores Honda. Apenas ESTAMPAGEM ou LASER.
         """
-        return "MICROPOINT" if year >= 2010 else "STAMPED"
+        return "LASER" if year >= 2010 else "ESTAMPAGEM"
 
     @staticmethod
     def validate_engine_format(engine_number: str) -> Dict:
@@ -104,13 +109,16 @@ class HondaMotorSpecs:
         Valida o formato do número de motor Honda.
         
         Args:
-            engine_number: Número do motor (ex: MC27E-1009153)
+            engine_number: Número do motor (ex: MD09E1-B215797)
             
         Returns:
             Dict com status de validação e detalhes extraídos
         """
         # Remove espaços e normaliza
         clean_number = engine_number.strip().upper().replace(' ', '')
+        
+        # Remove hífens para análise
+        clean_for_analysis = clean_number.replace('-', '')
         
         result = {
             'valid': False,
@@ -126,62 +134,51 @@ class HondaMotorSpecs:
             result['issues'].append("Número de motor vazio")
             return result
         
-        # Verifica caracteres proibidos
-        for char in HondaMotorSpecs.FORBIDDEN_CHARS:
-            if char in clean_number:
-                result['issues'].append(
-                    f"Caractere proibido '{char}' encontrado (confunde com número)"
-                )
+        # NÃO adiciona mais erro por 'O' - apenas registra para informação
+        # O sistema já corrige O->0 automaticamente
         
-        # Tenta fazer match com o padrão
-        match = HondaMotorSpecs.ENGINE_NUMBER_PATTERN.match(clean_number)
+        # Tenta encontrar prefixo conhecido
+        # Ordena por tamanho para pegar MD09E1 antes de MD09E
+        sorted_prefixes = sorted(
+            HondaMotorSpecs.ENGINE_PREFIXES.keys(), 
+            key=len, 
+            reverse=True
+        )
         
-        if not match:
-            result['issues'].append(
-                f"Formato '{clean_number}' não reconhecido como padrão Honda"
-            )
-            # Tenta extrair prefixo mesmo assim
-            for known_prefix in HondaMotorSpecs.ENGINE_PREFIXES.keys():
-                if clean_number.startswith(known_prefix):
-                    result['prefix'] = known_prefix
-                    result['serial'] = clean_number[len(known_prefix):].lstrip('-')
-                    result['model_info'] = HondaMotorSpecs.ENGINE_PREFIXES[known_prefix]
-                    break
-            return result
+        matched_prefix = None
+        for prefix in sorted_prefixes:
+            if clean_for_analysis.startswith(prefix):
+                matched_prefix = prefix
+                break
         
-        prefix = match.group(1).upper()
-        serial = match.group(2).upper()
-        
-        result['prefix'] = prefix
-        result['serial'] = serial
-        
-        # Verifica se o prefixo é conhecido
-        if prefix in HondaMotorSpecs.ENGINE_PREFIXES:
-            result['model_info'] = HondaMotorSpecs.ENGINE_PREFIXES[prefix]
+        if matched_prefix:
+            result['prefix'] = matched_prefix
+            result['serial'] = clean_for_analysis[len(matched_prefix):]
+            result['model_info'] = HondaMotorSpecs.ENGINE_PREFIXES[matched_prefix]
             result['valid'] = True
         else:
-            # Tenta match parcial (variações de prefixo)
-            for known_prefix, info in HondaMotorSpecs.ENGINE_PREFIXES.items():
-                if prefix.startswith(known_prefix[:3]) or known_prefix.startswith(prefix[:3]):
-                    result['model_info'] = info
-                    result['issues'].append(
-                        f"Prefixo '{prefix}' similar a '{known_prefix}' - verificar manualmente"
-                    )
-                    result['valid'] = True
-                    break
+            # Tenta match com regex
+            match = HondaMotorSpecs.ENGINE_NUMBER_PATTERN.match(clean_for_analysis)
             
-            if result['model_info'] is None:
+            if match:
+                result['prefix'] = match.group(1).upper()
+                result['serial'] = match.group(2).upper()
                 result['issues'].append(
-                    f"Prefixo '{prefix}' não cadastrado no banco de dados"
+                    f"Prefixo '{result['prefix']}' não cadastrado no banco de dados"
+                )
+            else:
+                result['issues'].append(
+                    f"Formato '{clean_number}' não reconhecido como padrão Honda"
                 )
         
         # Valida tamanho do serial
-        serial_digits_only = ''.join(c for c in serial if c.isdigit())
-        if len(serial_digits_only) < 6:
-            result['issues'].append(
-                f"Serial muito curto: {len(serial_digits_only)} dígitos (mínimo: 6)"
-            )
-            result['valid'] = False
+        if result['serial']:
+            serial_digits = ''.join(c for c in result['serial'] if c.isdigit())
+            if len(serial_digits) < 5:
+                result['issues'].append(
+                    f"Serial muito curto: {len(serial_digits)} dígitos (mínimo: 5)"
+                )
+                result['valid'] = False
         
         return result
 
@@ -192,22 +189,21 @@ class HondaMotorSpecs:
 
     @staticmethod
     def get_font_gap_info(char: str) -> List[str]:
-        """Retorna informações sobre os gaps esperados na fonte Honda para o caractere."""
+        """Retorna informações sobre os gaps esperados na fonte Honda."""
         return HondaMotorSpecs.FONT_GAPS.get(char, [])
 
     @staticmethod
     def get_possible_forgeries(char: str) -> List[str]:
         """
         Retorna caracteres que podem ter sido adulterados para parecer o caractere informado.
-        Baseado na imagem de referência de FAKES.
         """
         forgery_map = {
-            '0': ['6', '8', '9'],      # 0 pode vir de 6, 8 ou 9 adulterado
-            '1': ['7', '4'],            # 1 pode vir de 7 ou 4
-            '3': ['8'],                 # 3 pode vir de 8
-            '4': ['9', '1'],            # 4 pode vir de 9 ou 1
-            '9': ['8', '0', '4'],       # 9 pode vir de 8, 0 ou 4
-            '6': ['0', '8'],            # 6 pode vir de 0 ou 8
-            '8': ['0', '3', '6', '9'],  # 8 pode vir de vários
+            '0': ['6', '8', '9'],
+            '1': ['7', '4'],
+            '3': ['8'],
+            '4': ['9', '1'],
+            '9': ['8', '0', '4'],
+            '6': ['0', '8'],
+            '8': ['0', '3', '6', '9'],
         }
         return forgery_map.get(char, [])

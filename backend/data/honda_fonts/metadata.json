@@ -1,0 +1,172 @@
+{
+  "version": "1.0",
+  "description": "Banco de fontes Honda - Padrão único para LASER e ESTAMPAGEM",
+  "last_updated": "2024-12-23",
+  "total_characters": 20,
+  "note": "A tipografia Honda é a mesma independente do método de gravação. A diferença está apenas na técnica (micropuntos vs relevo), não no desenho dos caracteres.",
+  
+  "missing_critical": ["N", "P"],
+  "missing_optional": ["F", "H", "L", "R", "S", "T", "U", "V", "W", "X", "Y"],
+  
+  "characters": {
+    "0": {
+      "file": "0.png",
+      "type": "number",
+      "high_risk": true,
+      "description": "Zero - formato oval aberto nas extremidades",
+      "possible_forgeries_from": ["6", "8", "9", "O"],
+      "key_features": ["Extremidades superior e inferior abertas", "Formato oval alongado", "Linhas laterais paralelas"]
+    },
+    "1": {
+      "file": "1.png",
+      "type": "number",
+      "high_risk": true,
+      "description": "Um - haste vertical com serifa no topo esquerdo",
+      "possible_forgeries_from": ["7", "I", "l"],
+      "key_features": ["Haste vertical única", "Serifa inclinada no topo esquerdo", "Sem base larga"]
+    },
+    "2": {
+      "file": "2.png",
+      "type": "number",
+      "high_risk": false,
+      "description": "Dois - curva superior e base horizontal",
+      "key_features": ["Curva fechada no topo", "Base horizontal reta", "Diagonal conectando"]
+    },
+    "3": {
+      "file": "3.png",
+      "type": "number",
+      "high_risk": true,
+      "description": "Três - duas curvas abertas à esquerda",
+      "possible_forgeries_from": ["8"],
+      "key_features": ["Duas curvas em C empilhadas", "Aberturas voltadas para esquerda", "Ponto central de encontro"]
+    },
+    "4": {
+      "file": "4.png",
+      "type": "number",
+      "high_risk": true,
+      "description": "Quatro - GAP CRÍTICO onde linhas não se tocam",
+      "possible_forgeries_from": ["9", "1"],
+      "key_features": ["GAP: linha vertical NÃO toca a horizontal", "Formato angular", "Linha horizontal no meio"]
+    },
+    "5": {
+      "file": "5.png",
+      "type": "number",
+      "high_risk": false,
+      "description": "Cinco - topo horizontal, curva inferior",
+      "key_features": ["Linha horizontal no topo", "Curva inferior aberta à esquerda"]
+    },
+    "6": {
+      "file": "6.png",
+      "type": "number",
+      "high_risk": false,
+      "description": "Seis - curva superior aberta, círculo inferior",
+      "key_features": ["Cauda curva no topo", "Círculo fechado na base"]
+    },
+    "7": {
+      "file": "7.png",
+      "type": "number",
+      "high_risk": false,
+      "description": "Sete - linha horizontal no topo, diagonal",
+      "key_features": ["Linha horizontal curta no topo", "Diagonal longa descendo"]
+    },
+    "8": {
+      "file": "8.png",
+      "type": "number",
+      "high_risk": false,
+      "description": "Oito - dois círculos empilhados (superior menor)",
+      "key_features": ["Dois círculos conectados", "Círculo superior MENOR", "Simétrico"]
+    },
+    "9": {
+      "file": "9.png",
+      "type": "number",
+      "high_risk": true,
+      "description": "Nove - círculo superior fechado, cauda curva",
+      "possible_forgeries_from": ["8", "0", "4"],
+      "key_features": ["Círculo fechado no topo", "Cauda curva descendo"]
+    },
+    "A": {
+      "file": "A.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra A - duas diagonais com barra horizontal"
+    },
+    "B": {
+      "file": "B.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra B - haste vertical com duas curvas à direita"
+    },
+    "C": {
+      "file": "C.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra C - curva aberta à direita"
+    },
+    "D": {
+      "file": "D.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra D - haste vertical com curva à direita"
+    },
+    "E": {
+      "file": "E.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra E - haste vertical com três linhas horizontais"
+    },
+    "G": {
+      "file": "G.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra G - C com barra horizontal interna"
+    },
+    "I": {
+      "file": "I.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra I - haste vertical simples (sem serifa, diferente do 1)",
+      "confusion_with": ["1", "l"]
+    },
+    "J": {
+      "file": "J.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra J - haste vertical com curva na base"
+    },
+    "K": {
+      "file": "K.png",
+      "type": "letter",
+      "high_risk": false,
+      "description": "Letra K - haste vertical com duas diagonais"
+    },
+    "M": {
+      "file": "M.png",
+      "type": "letter",
+      "high_risk": true,
+      "critical_distinction": "M vs N",
+      "description": "Letra M - DOIS PICOS no topo (W invertido)",
+      "confusion_with": ["N"],
+      "key_features": [
+        "DOIS PICOS no topo formando W invertido",
+        "Duas hastes verticais nas extremidades",
+        "V no centro entre as hastes",
+        "MAIS LARGO que o N",
+        "SIMÉTRICO verticalmente"
+      ],
+      "distinction_from_N": "M tem dois picos (W invertido), N tem diagonal única"
+    }
+  },
+  
+  "critical_missing": {
+    "N": {
+      "reason": "ESSENCIAL para distinguir de M - usado em ND09E1, NC51E, etc",
+      "expected_features": [
+        "Diagonal ÚNICA descendo da esquerda para direita",
+        "Duas hastes verticais",
+        "NÃO tem picos no topo",
+        "Mais estreito que M",
+        "ASSIMÉTRICO"
+      ]
+    }
+  }
+}
