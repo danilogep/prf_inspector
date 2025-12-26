@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0D1B4C">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>PRF Honda Inspector</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0D1B4C;
+            --secondary: #1E3A8A;
+            --accent: #F59E0B;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F97316;
+            --light: #F8FAFC;
+            --white: #FFFFFF;
+            --gray: #64748B;
+            --dark-gray: #1E293B;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 36px;
+            height: 36px;
+            color: var(--accent);
+        }
+
+        .header-title {
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .header-subtitle {
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .version-badge {
+            background: var(--accent);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Container */
+        .container {
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Upload Area */
+        .upload-area {
+            background: linear-gradient(135deg, var(--light) 0%, #E2E8F0 100%);
+            border: 3px dashed var(--secondary);
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-area.has-image {
+            padding: 0;
+            border-color: var(--success);
+        }
+
+        .upload-area:active {
+            transform: scale(0.98);
+        }
+
+        .upload-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .upload-icon {
+            width: 36px;
+            height: 36px;
+            color: var(--accent);
+        }
+
+        .upload-text {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            border-radius: 17px;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        /* Form Card */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .card-label {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border: 2px solid var(--light);
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent);
+        }
+
+        .input-hint {
+            color: var(--gray);
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            box-shadow: 0 8px 25px rgba(13,27,76,0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-icon {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .menu-btn {
+            background: var(--white);
+            border: 2px solid var(--light);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-btn:active {
+            transform: scale(0.98);
+            background: var(--light);
+        }
+
+        .menu-btn-text {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .menu-btn-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--primary);
+        }
+
+        /* Result */
+        .verdict-card {
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            margin-bottom: 16px;
+        }
+
+        .verdict-card.success { background: var(--success); }
+        .verdict-card.warning { background: var(--warning); }
+        .verdict-card.danger { background: var(--danger); }
+
+        .verdict-icon {
+            width: 56px;
+            height: 56px;
+            color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .verdict-title {
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .verdict-score {
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            padding: 8px 20px;
+            display: inline-block;
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .code-display {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        .section-label {
+            color: var(--gray);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--light);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .detail-value {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--dark-gray);
+            margin-bottom: 8px;
+        }
+
+        .alert-danger { background: #FEE2E2; }
+        .alert-warning { background: #FEF3C7; }
+        .alert-success { background: #F0FDF4; }
+
+        /* Evaluation Card */
+        .eval-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(13,27,76,0.3);
+            margin-bottom: 16px;
+        }
+
+        .eval-title {
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .eval-text {
+            color: var(--white);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .eval-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .eval-buttons .btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 14px;
+        }
+
+        /* History */
+        .history-item {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .history-icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .history-icon-wrapper.success { background: var(--success); }
+        .history-icon-wrapper.warning { background: var(--warning); }
+        .history-icon-wrapper.danger { background: var(--danger); }
+
+        .history-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--white);
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-code {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 16px;
+            font-family: monospace;
+        }
+
+        .history-meta {
+            color: var(--gray);
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        /* Stats */
+        .stats-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .stats-value {
+            color: var(--accent);
+            font-size: 48px;
+            font-weight: 800;
+            margin: 8px 0;
+        }
+
+        .stats-label {
+            color: var(--white);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--gray);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: var(--white);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-logo">
+            <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div>
+                <div class="header-title">PRF INSPECTOR</div>
+                <div class="header-subtitle">ANÁLISE DE MOTORES HONDA</div>
+            </div>
+        </div>
+        <span class="version-badge">v5.2</span>
+    </header>
+
+    <!-- Views -->
+    <div id="home-view" class="container">
+        <!-- Upload -->
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()">
+            <div id="upload-placeholder">
+                <div class="upload-icon-wrapper">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </div>
+                <p class="upload-text">Toque para capturar foto</p>
+                <p class="upload-hint">ou selecionar da galeria</p>
+            </div>
+            <img id="preview-image" class="preview-image hidden" alt="Preview">
+        </div>
+        <input type="file" id="file-input" accept="image/*" capture="environment">
+
+        <!-- Ano -->
+        <div class="card">
+            <label class="card-label">Ano do Veículo</label>
+            <input type="number" id="year-input" class="input-field" placeholder="Ex: 2015">
+            <p class="input-hint" id="year-hint">Informe o ano para validação</p>
+        </div>
+
+        <!-- Botão Analisar -->
+        <button class="btn btn-primary" id="analyze-btn" disabled>
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span id="analyze-text">ANALISAR MOTOR</span>
+        </button>
+
+        <!-- Menu -->
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="loadHistory()">
+                <svg class="menu-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span class="menu-btn-text">Histórico</span>
+            </button>
+            <button class="menu-btn" onclick="loadStats()">
+                <svg class="menu-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/>
+                    <line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span class="menu-btn-text">Estatísticas</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Result View -->
+    <div id="result-view" class="container hidden">
+        <div class="verdict-card" id="verdict-card">
+            <svg class="verdict-icon" id="verdict-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <h2 class="verdict-title" id="verdict-title">REGULAR</h2>
+            <span class="verdict-score" id="verdict-score">Score: 0/100</span>
+        </div>
+
+        <div class="card">
+            <p class="section-label">CÓDIGO IDENTIFICADO</p>
+            <p class="code-display" id="result-code">N/A</p>
+            <p id="result-model" style="color: var(--accent); font-weight: 600; margin-top: 8px;"></p>
+        </div>
+
+        <div class="card">
+            <p class="section-label">ANÁLISE DETALHADA</p>
+            <div class="detail-row">
+                <span class="detail-label">Tipo Detectado</span>
+                <span class="detail-value" id="detected-type">N/A</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Tipo Esperado</span>
+                <span class="detail-value" id="expected-type">N/A</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Mistura de Tipos</span>
+                <span class="detail-value" id="mixed-types">NÃO</span>
+            </div>
+        </div>
+
+        <div class="card" id="alerts-card">
+            <p class="section-label">ALERTAS E OBSERVAÇÕES</p>
+            <div id="alerts-container"></div>
+        </div>
+
+        <div class="eval-card">
+            <p class="eval-title">AVALIAR RESULTADO</p>
+            <p class="eval-text">A análise da IA está correta?</p>
+            <div class="eval-buttons">
+                <button class="btn btn-success" onclick="evaluateAnalysis(true)">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                    CORRETA
+                </button>
+                <button class="btn btn-danger" onclick="evaluateAnalysis(false)">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+                    </svg>
+                    INCORRETA
+                </button>
+            </div>
+        </div>
+
+        <button class="btn btn-outline" onclick="resetAnalysis()">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+            </svg>
+            NOVA ANÁLISE
+        </button>
+    </div>
+
+    <!-- History View -->
+    <div id="history-view" class="container hidden">
+        <div class="page-header">
+            <h2 class="page-title">Histórico de Análises</h2>
+            <button class="back-btn" onclick="showView('home')">Voltar</button>
+        </div>
+        <div id="history-container"></div>
+    </div>
+
+    <!-- Stats View -->
+    <div id="stats-view" class="container hidden">
+        <div class="page-header">
+            <h2 class="page-title">Estatísticas</h2>
+            <button class="back-btn" onclick="showView('home')">Voltar</button>
+        </div>
+        <div id="stats-container"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+        let selectedFile = null;
+        let currentResult = null;
+
+        // Elements
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const previewImage = document.getElementById('preview-image');
+        const yearInput = document.getElementById('year-input');
+        const yearHint = document.getElementById('year-hint');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const analyzeText = document.getElementById('analyze-text');
+
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    previewImage.src = reader.result;
+                    previewImage.classList.remove('hidden');
+                    uploadPlaceholder.classList.add('hidden');
+                    uploadArea.classList.add('has-image');
+                    checkCanAnalyze();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Year input
+        yearInput.addEventListener('input', () => {
+            const year = parseInt(yearInput.value);
+            if (year) {
+                if (year < 2010) {
+                    yearHint.textContent = '⚙️ Esperado: ESTAMPAGEM';
+                } else {
+                    yearHint.textContent = '🔦 Esperado: LASER';
+                }
+            } else {
+                yearHint.textContent = 'Informe o ano para validação';
+            }
+            checkCanAnalyze();
+        });
+
+        function checkCanAnalyze() {
+            analyzeBtn.disabled = !selectedFile || !yearInput.value;
+        }
+
+        // Analyze
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile || !yearInput.value) return;
+
+            analyzeBtn.disabled = true;
+            analyzeText.innerHTML = '<span class="loading"></span> ANALISANDO...';
+
+            try {
+                const formData = new FormData();
+                formData.append('photo', selectedFile);
+                formData.append('year', yearInput.value);
+
+                const response = await fetch(`${API_URL}/analyze/motor`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                currentResult = await response.json();
+                showResult(currentResult);
+            } catch (error) {
+                alert('Erro ao analisar: ' + error.message);
+            } finally {
+                analyzeBtn.disabled = false;
+                analyzeText.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ANALISAR MOTOR';
+            }
+        });
+
+        function showResult(data) {
+            const verdictCard = document.getElementById('verdict-card');
+            const verdictTitle = document.getElementById('verdict-title');
+            const verdictScore = document.getElementById('verdict-score');
+            const verdictIcon = document.getElementById('verdict-icon');
+
+            // Verdict style
+            const verdict = (data.verdict || '').toUpperCase();
+            verdictCard.classList.remove('success', 'warning', 'danger');
+            
+            if (verdict.includes('FRAUDE') || verdict.includes('ALTA')) {
+                verdictCard.classList.add('danger');
+                verdictIcon.innerHTML = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+            } else if (verdict.includes('SUSPEITO') || verdict.includes('ATENÇÃO')) {
+                verdictCard.classList.add('warning');
+                verdictIcon.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>';
+            } else {
+                verdictCard.classList.add('success');
+                verdictIcon.innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+            }
+
+            verdictTitle.textContent = data.verdict || 'ANALISANDO';
+            verdictScore.textContent = `Score: ${data.risk_score || 0}/100`;
+
+            // Code
+            document.getElementById('result-code').textContent = data.read_code || 'N/A';
+            document.getElementById('result-model').textContent = data.expected_model || '';
+
+            // Details
+            const ai = data.components?.ai_analysis || {};
+            document.getElementById('detected-type').textContent = ai.detected_type || 'N/A';
+            document.getElementById('expected-type').textContent = ai.expected_type || 'N/A';
+            
+            const mixedEl = document.getElementById('mixed-types');
+            if (ai.has_mixed_types) {
+                mixedEl.textContent = '⚠️ SIM';
+                mixedEl.style.color = 'var(--danger)';
+            } else {
+                mixedEl.textContent = '✓ NÃO';
+                mixedEl.style.color = 'var(--success)';
+            }
+
+            // Alerts
+            const alertsContainer = document.getElementById('alerts-container');
+            alertsContainer.innerHTML = '';
+            
+            if (data.explanation && data.explanation.length > 0) {
+                data.explanation.slice(0, 5).forEach(alert => {
+                    const div = document.createElement('div');
+                    div.className = 'alert';
+                    if (alert.includes('🚨')) {
+                        div.classList.add('alert-danger');
+                    } else if (alert.includes('⚠️')) {
+                        div.classList.add('alert-warning');
+                    } else {
+                        div.classList.add('alert-success');
+                    }
+                    div.textContent = alert;
+                    alertsContainer.appendChild(div);
+                });
+                document.getElementById('alerts-card').classList.remove('hidden');
+            } else {
+                document.getElementById('alerts-card').classList.add('hidden');
+            }
+
+            showView('result');
+        }
+
+        async function evaluateAnalysis(correct) {
+            const analysisId = currentResult?.components?.analysis_id;
+            if (!analysisId) {
+                alert('ID da análise não encontrado');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('correct', correct);
+                
+                const isFraud = currentResult?.verdict?.toUpperCase().includes('FRAUDE');
+                formData.append('is_fraud', isFraud);
+
+                await fetch(`${API_URL}/evaluate/${analysisId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                alert('Avaliação salva com sucesso!');
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        function resetAnalysis() {
+            selectedFile = null;
+            currentResult = null;
+            fileInput.value = '';
+            yearInput.value = '';
+            previewImage.classList.add('hidden');
+            previewImage.src = '';
+            uploadPlaceholder.classList.remove('hidden');
+            uploadArea.classList.remove('has-image');
+            yearHint.textContent = 'Informe o ano para validação';
+            analyzeBtn.disabled = true;
+            showView('home');
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_URL}/history?limit=20`);
+                const data = await response.json();
+                
+                const container = document.getElementById('history-container');
+                container.innerHTML = '';
+
+                if (!data.analyses || data.analyses.length === 0) {
+                    container.innerHTML = '<p class="empty-state">Nenhuma análise encontrada</p>';
+                } else {
+                    data.analyses.forEach(item => {
+                        const verdict = (item.verdict || '').toUpperCase();
+                        let iconClass = 'success';
+                        let iconPath = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+                        
+                        if (verdict.includes('FRAUDE') || verdict.includes('ALTA')) {
+                            iconClass = 'danger';
+                            iconPath = '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>';
+                        } else if (verdict.includes('SUSPEITO') || verdict.includes('ATENÇÃO')) {
+                            iconClass = 'warning';
+                            iconPath = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>';
+                        }
+
+                        const evaluated = item.evaluated 
+                            ? (item.evaluation_correct ? ' ✓' : ' ✗') 
+                            : '';
+
+                        container.innerHTML += `
+                            <div class="history-item">
+                                <div class="history-icon-wrapper ${iconClass}">
+                                    <svg class="history-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${iconPath}</svg>
+                                </div>
+                                <div class="history-content">
+                                    <p class="history-code">${item.read_code || 'N/A'}</p>
+                                    <p class="history-meta">${item.year_informed || ''} • Score: ${item.risk_score || 0}${evaluated}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                showView('history');
+            } catch (error) {
+                alert('Erro ao carregar histórico');
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/stats`);
+                const data = await response.json();
+
+                const container = document.getElementById('stats-container');
+                container.innerHTML = `
+                    <div class="stats-hero">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        <p class="stats-value">${data.accuracy_rate || 0}%</p>
+                        <p class="stats-label">Taxa de Acurácia</p>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--primary)">${data.total_analyses || 0}</p>
+                            <p class="stat-label">Total Análises</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--secondary)">${data.total_evaluated || 0}</p>
+                            <p class="stat-label">Avaliadas</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--success)">${data.total_correct || 0}</p>
+                            <p class="stat-label">Corretas</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--warning)">${data.pending_evaluation || 0}</p>
+                            <p class="stat-label">Pendentes</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--success)">${data.originals || 0}</p>
+                            <p class="stat-label">Originais</p>
+                        </div>
+                        <div class="stat-card">
+                            <p class="stat-value" style="color: var(--danger)">${data.frauds || 0}</p>
+                            <p class="stat-label">Fraudes</p>
+                        </div>
+                    </div>
+                `;
+
+                showView('stats');
+            } catch (error) {
+                alert('Erro ao carregar estatísticas');
+            }
+        }
+
+        function showView(view) {
+            document.getElementById('home-view').classList.add('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            document.getElementById('history-view').classList.add('hidden');
+            document.getElementById('stats-view').classList.add('hidden');
+            
+            document.getElementById(view + '-view').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "PRF Honda Inspector",
+  "short_name": "PRF Inspector",
+  "description": "Análise forense de motores Honda",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D1B4C",
+  "theme_color": "#0D1B4C",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230D1B4C' width='100' height='100' rx='20'/><path fill='%23F59E0B' d='M50 10 L75 25 L75 55 C75 75 50 90 50 90 C50 90 25 75 25 55 L25 25 Z'/><path fill='%230D1B4C' d='M50 20 L65 30 L65 55 C65 68 50 78 50 78 C50 78 35 68 35 55 L35 30 Z'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
