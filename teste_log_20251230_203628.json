@@ -1,0 +1,463 @@
+{
+  "timestamp": "20251230_203628",
+  "pasta": "C:\\ORIGINAIS",
+  "resultados": [
+    {
+      "arquivo": "ORIGINAL (1).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 41.045541524887085,
+      "score": 98,
+      "codigo": "KD08E72-SQ29L66",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (10).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 36.238078117370605,
+      "score": 92,
+      "codigo": "MC27E-2-10091553",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (11).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 29.660786390304565,
+      "score": 98,
+      "codigo": "NC43E1-B006313",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (12).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 34.581292152404785,
+      "score": 92,
+      "codigo": "MD09E1-B21579T",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (13).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 55.56651163101196,
+      "score": 92,
+      "codigo": "JHB02E1-C0187611",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (14).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 24.159664392471313,
+      "score": 98,
+      "codigo": "MC35E-7043827",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (15).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 32.5635199546814,
+      "score": 92,
+      "codigo": "MD4LEO-G012461",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (16).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 35.34711813926697,
+      "score": 98,
+      "codigo": "KF3E1-K00A061",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (17).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 59.406779050827026,
+      "score": 92,
+      "codigo": "KD08E1-S046726",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (18).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 34.234729051589966,
+      "score": 92,
+      "codigo": "MC35F-8000553",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (19).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 56.50362420082092,
+      "score": 98,
+      "codigo": "KD10E0-H022121",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (2).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 33.58045196533203,
+      "score": 92,
+      "codigo": "JC9R0-S001456",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (20).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 79.78620624542236,
+      "score": 92,
+      "codigo": "KC08E1-4038179",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (21).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 120.25597476959229,
+      "score": 98,
+      "codigo": "K22E1-P010536",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (22).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 51.22238111495972,
+      "score": 98,
+      "codigo": "JB01E0-10370078",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (23).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 66.40681743621826,
+      "score": 92,
+      "codigo": "JB01E0-TQM1681",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (24).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 42.42347860336304,
+      "score": 92,
+      "codigo": "KD08E2-T016090",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (25).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 42.62632083892822,
+      "score": 93,
+      "codigo": "JB01E0-T441807",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (26).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 41.31812930107117,
+      "score": 98,
+      "codigo": "JC48E3-N025615",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (27).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 44.361714363098145,
+      "score": 92,
+      "codigo": "JC48E3-K2075628",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (28).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 97.25189590454102,
+      "score": 98,
+      "codigo": "JC710E0-N043636",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (29).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 121.4427421092987,
+      "score": 93,
+      "codigo": "JB01E0-1237552",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (3).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 181.4786455631256,
+      "score": 98,
+      "codigo": "JC80L-2237834",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (30).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 64.51826858520508,
+      "score": 92,
+      "codigo": "K008E2-T019198",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (31).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 39.704699754714966,
+      "score": 92,
+      "codigo": "KDQ8E2-T017952",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (32).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 39.597148180007935,
+      "score": 92,
+      "codigo": "JC97E1-1025586",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (4).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 29.624189615249634,
+      "score": 92,
+      "codigo": "KC08E5-7083003",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (5).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 36.06385350227356,
+      "score": 35,
+      "codigo": "KC08E5-7082269",
+      "risk_factors": [],
+      "status": "OK"
+    },
+    {
+      "arquivo": "ORIGINAL (6).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 54.61199188232422,
+      "score": 92,
+      "codigo": "CHA07E-X0394L78",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (7).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 29.907530784606934,
+      "score": 92,
+      "codigo": "NDT1E1-F000766",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (8).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 33.50132131576538,
+      "score": 92,
+      "codigo": "JC80L-22378351",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (9).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 57.73697543144226,
+      "score": 98,
+      "codigo": "KC22E1-L052178",
+      "risk_factors": [],
+      "status": "FALSO_POSITIVO"
+    }
+  ],
+  "resumo": {
+    "originais": {
+      "total": 32,
+      "ok": 1,
+      "falsos_positivos": [
+        {
+          "arquivo": "ORIGINAL (1).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (10).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (11).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (12).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (13).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (14).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (15).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (16).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (17).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (18).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (19).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (2).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (20).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (21).jpg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (22).jpg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (23).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (24).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (25).jpg",
+          "score": 93,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (26).jpg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (27).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (28).jpg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (29).jpg",
+          "score": 93,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (3).jpeg",
+          "score": 98,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (30).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (31).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (32).jpg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (4).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (6).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (7).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (8).jpeg",
+          "score": 92,
+          "motivos": []
+        },
+        {
+          "arquivo": "ORIGINAL (9).jpeg",
+          "score": 98,
+          "motivos": []
+        }
+      ]
+    },
+    "adulterados": {
+      "total": 0,
+      "ok": 0,
+      "falsos_negativos": []
+    },
+    "falhas": []
+  }
+}

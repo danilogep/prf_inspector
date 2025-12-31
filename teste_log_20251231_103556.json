@@ -1,0 +1,565 @@
+{
+  "timestamp": "20251231_103556",
+  "versao": "v5.31",
+  "pasta": "C:\\ORIGINAIS",
+  "resultados": [
+    {
+      "arquivo": "ORIGINAL (1).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 31.94862389564514,
+      "score": 90,
+      "codigo": "KD08E2-S029166",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (10).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 52.18856167793274,
+      "score": 90,
+      "codigo": "MC27E-2-1009153",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (11).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 35.35934543609619,
+      "score": 93,
+      "codigo": "NC43E1-B006313",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (12).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 33.0351128578186,
+      "score": 87,
+      "codigo": "MD09E1-B21579T",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (13).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 27.923476934432983,
+      "score": 95,
+      "codigo": "HB02E1-C018761",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (14).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 25.773453950881958,
+      "score": 93,
+      "codigo": "MC35E-7043827",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (15).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 47.98533344268799,
+      "score": 93,
+      "codigo": "MDJ1EO-G012461",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (16).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 61.043742656707764,
+      "score": 93,
+      "codigo": "KF3HE1-K004061",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (17).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 77.87170600891113,
+      "score": 93,
+      "codigo": "KD08E1-S046726",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (18).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 33.30775237083435,
+      "score": 87,
+      "codigo": "MC35F-8000553",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (19).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 30.349528074264526,
+      "score": 87,
+      "codigo": "KD10E0-H022121",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (2).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 31.960373163223267,
+      "score": 87,
+      "codigo": "JC9EJ-S001456",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (20).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 43.22146821022034,
+      "score": 93,
+      "codigo": "KC08EF1-4038179",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (21).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 37.136354207992554,
+      "score": 87,
+      "codigo": "K-D22E1-P070536",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (22).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 30.783666849136353,
+      "score": 90,
+      "codigo": "JB01E0-10370978",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (23).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 45.74853563308716,
+      "score": 87,
+      "codigo": "JB01E0-TO416681",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (24).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 63.86099648475647,
+      "score": 87,
+      "codigo": "KD08E2-T016090",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (25).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 39.291810274124146,
+      "score": 93,
+      "codigo": "JB01E0-T441807",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (26).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 46.881075859069824,
+      "score": 87,
+      "codigo": "JC48E3-N025661S",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (27).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 50.90054273605347,
+      "score": 85,
+      "codigo": "JC48E3-K2075228",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (28).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 38.76274847984314,
+      "score": 87,
+      "codigo": "JQ70E0-N0436636",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (29).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 57.33881974220276,
+      "score": 87,
+      "codigo": "JB01E0-1237552",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (3).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 36.07497596740723,
+      "score": 87,
+      "codigo": "JC80L-2237834",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (30).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 38.426215171813965,
+      "score": 95,
+      "codigo": "KD08E2-T019198",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (31).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 33.56127882003784,
+      "score": 87,
+      "codigo": "KD08E2-T0179552",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (32).jpg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 48.09805130958557,
+      "score": 87,
+      "codigo": "JC97E1-T9265386",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (4).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 64.60088062286377,
+      "score": 85,
+      "codigo": "KC08E5-7035003",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (5).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 36.06259369850159,
+      "score": 87,
+      "codigo": "KC08E5-70822669",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (6).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 41.323577642440796,
+      "score": 87,
+      "codigo": "CHA07E-N0394178",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (7).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 40.80008363723755,
+      "score": 87,
+      "codigo": "NDTE1-F000756",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (8).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 42.46216702461243,
+      "score": 85,
+      "codigo": "JC80L-2237835",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    },
+    {
+      "arquivo": "ORIGINAL (9).jpeg",
+      "tipo_esperado": "ORIGINAL",
+      "tempo": 39.674482107162476,
+      "score": 93,
+      "codigo": "KC22E1-L052178",
+      "verdict": "FRAUDE CONFIRMADA",
+      "risk_factors": [],
+      "font_is_honda": null,
+      "status": "FALSO_POSITIVO"
+    }
+  ],
+  "resumo": {
+    "originais": {
+      "total": 32,
+      "ok": 0,
+      "falsos_positivos": [
+        {
+          "arquivo": "ORIGINAL (1).jpeg",
+          "score": 90,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (10).jpeg",
+          "score": 90,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (11).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (12).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (13).jpeg",
+          "score": 95,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (14).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (15).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (16).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (17).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (18).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (19).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (2).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (20).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (21).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (22).jpg",
+          "score": 90,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (23).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (24).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (25).jpg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (26).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (27).jpg",
+          "score": 85,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (28).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (29).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (3).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (30).jpg",
+          "score": 95,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (31).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (32).jpg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (4).jpeg",
+          "score": 85,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (5).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (6).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (7).jpeg",
+          "score": 87,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (8).jpeg",
+          "score": 85,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        },
+        {
+          "arquivo": "ORIGINAL (9).jpeg",
+          "score": 93,
+          "motivos": [],
+          "verdict": "FRAUDE CONFIRMADA"
+        }
+      ]
+    },
+    "adulterados": {
+      "total": 0,
+      "ok": 0,
+      "falsos_negativos": []
+    },
+    "falhas": []
+  }
+}
